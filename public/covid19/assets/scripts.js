@@ -4,10 +4,10 @@ const fetchData = async (url) => {
   return await res.json();
 }
 
-const refreshBarChartData = (chart, data, pageSize, pageNumber) => {
-  const labels = data.slice((pageNumber - 1) * pageSize, pageNumber * pageSize).map((item) => item.location);
-  const confirmed = data.slice((pageNumber - 1) * pageSize, pageNumber * pageSize).map((item) => item.confirmed);
-  const deaths  = data.slice((pageNumber - 1) * pageSize, pageNumber * pageSize).map((item) => item.deaths);
+const refreshBarChart = (chart, data) => {
+  const labels = data.map((item) => item.location);
+  const confirmed = data.map((item) => item.confirmed);
+  const deaths  = data.map((item) => item.deaths);
 
   chart.data.labels = labels;
   chart.data.datasets = [
@@ -32,10 +32,21 @@ const refreshBarChartData = (chart, data, pageSize, pageNumber) => {
   return labels;
 }
 
+const paginate = (arr, size) => {
+  return arr.reduce((acc, val, i) => {
+    let idx = Math.floor(i / size)
+    let page = acc[idx] || (acc[idx] = [])
+    page.push(val)
+
+    return acc
+  }, [])
+}
+
+
 const generateBarChart = (data) => {
-  const labels = data.slice(0, 15).map((item) => item.location);
-  const confirmed = data.slice(0, 15).map((item) => item.confirmed);
-  const deaths  = data.slice(0, 15).map((item) => item.deaths);
+  const labels = data.map((item) => item.location);
+  const confirmed = data.map((item) => item.confirmed);
+  const deaths  = data.map((item) => item.deaths);
 
   const ctx = document.getElementById('myChart');
   const chart = new Chart(ctx, {
@@ -129,33 +140,10 @@ const generateTable = (data) => {
     tableEl.appendChild(trEl);
   });
 
+  return data;
 }
 
-const App = async () => {
-  const { data } = await fetchData('http://localhost:3000/api/total');
-  const filteredData = data.filter((item) => item.confirmed > 10000);
-
-  const chart = generateBarChart(filteredData);
-  const table = generateTable(filteredData);
-  const pieChart = generatePieChart();
-
-  document.querySelector('#nextButton').addEventListener('click', () => {
-    const currentPage = parseInt(document.querySelector('#currentPage').value);
-    const labels = refreshChartData(chart, filteredData, 15, currentPage+1);
-    if (labels.length > 0) {
-      document.querySelector('#currentPage').value = currentPage+1;
-    }
-  });
-
-  document.querySelector('#prevButton').addEventListener('click', () => {
-    const pageNumberEl = document.querySelector('#currentPage');
-    const currentPage = parseInt(pageNumberEl.value);
-    if (currentPage > 1) {
-      refreshChartData(chart, filteredData, 15, currentPage-1);
-      pageNumberEl.value = currentPage-1;
-    }
-  });
-
+const prepareModalDetails = (pieChart) => {
   document.querySelectorAll('.link').forEach((el) => {
     el.addEventListener('click', async () => {
       const country = el.id;
@@ -165,9 +153,59 @@ const App = async () => {
       myModal.show();
       pieChart.data.datasets[0].data = [data.confirmed, data.deaths];
       pieChart.update();
-
     });
   })
+}
+
+const App = async () => {
+  const { data } = await fetchData('http://localhost:3000/api/total');
+  const filteredData = data.filter((item) => item.confirmed > 10000);
+
+  const dataPaginated = paginate(filteredData, 15);
+  const chart = generateBarChart(dataPaginated[0]);
+  const pieChart = generatePieChart();
+  generateTable(dataPaginated[0]);
+  prepareModalDetails(pieChart);
+
+  document.querySelector('#nextButton').addEventListener('click', () => {
+    const pageNumberEl = document.querySelector('#currentPage');
+    const currentPage = parseInt(pageNumberEl.value);
+    if(dataPaginated[currentPage+1]?.length > 0) {
+      refreshBarChart(chart, dataPaginated[currentPage+1]);
+      pageNumberEl.value = currentPage+1;
+    }
+  });
+
+  document.querySelector('#prevButton').addEventListener('click', () => {
+    const pageNumberEl = document.querySelector('#currentPage');
+    const currentPage = parseInt(pageNumberEl.value);
+    if (currentPage-1 >= 0) {
+      refreshBarChart(chart, dataPaginated[currentPage-1]);
+      pageNumberEl.value = currentPage-1;
+    }
+  });
+
+  document.querySelector('#nextTableButton').addEventListener('click', () => {
+    const pageNumberEl = document.querySelector('#currentPageTable');
+    const currentPage = parseInt(pageNumberEl.value);
+    if (dataPaginated[currentPage+1]?.length > 0) {
+      document.querySelector('#tableBody').innerHTML = '';
+      generateTable(dataPaginated[currentPage+1]);
+      pageNumberEl.value = currentPage+1;
+      prepareModalDetails(pieChart);
+    }
+  });
+
+  document.querySelector('#prevTableButton').addEventListener('click', () => {
+    const pageNumberEl = document.querySelector('#currentPageTable');
+    const currentPage = parseInt(pageNumberEl.value);
+    if (currentPage-1 >= 0) {
+      document.querySelector('#tableBody').innerHTML = '';
+      generateTable(dataPaginated[currentPage-1]);
+      pageNumberEl.value = currentPage-1;
+      prepareModalDetails(pieChart);
+    }
+  });
 }
 
 App();

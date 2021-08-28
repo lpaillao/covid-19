@@ -29,7 +29,7 @@
   </nav>
 
   <section class="container py-4">
-    <h1 class="text-center mt-4">Paises con Covid19</h1>
+    <h1 class="text-center my-4">Paises con Covid19</h1>
     <canvas id="myChart" width="400" height="400" style="max-height: 400px;"></canvas>
     <div class="justify-content-center d-flex">
       <button type="button" class="btn btn-dark mx-2" id="prevButton">
@@ -38,7 +38,7 @@
       <button type="button" class="btn btn-dark mx-2" id="nextButton">
         <i class="bi bi-arrow-right"></i>
       </button>
-      <input type="text" class="d-none" value="1" id="currentPage">
+      <input type="text" class="d-none" value="0" id="currentPage">
     </div>
   </section>
 
@@ -54,6 +54,15 @@
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
+    <div class="justify-content-center d-flex">
+      <button type="button" class="btn btn-dark mx-2" id="prevTableButton">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <button type="button" class="btn btn-dark mx-2" id="nextTableButton">
+        <i class="bi bi-arrow-right"></i>
+      </button>
+      <input type="text" class="d-none" value="0" id="currentPageTable">
+    </div>
   </section>
 
   <div class="modal" tabindex="-1" id="myModal">
