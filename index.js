@@ -1,7 +1,9 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const path = require('path')
+var cors = require("cors");
 const app = express()
+app.use(cors());
 
 const options = {
     inflate: true,

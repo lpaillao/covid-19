@@ -209,3 +209,41 @@ const App = async () => {
 }
 
 App();
+
+//MODAL LOGIN
+document.querySelector('#btnLogin').addEventListener('click', () => {
+  const modalLogin = new bootstrap.Modal(document.getElementById('modalLogin'));
+  modalLogin.show();
+});
+
+//JWT
+    const postData = async (email, password) => {
+  try {
+    const response = await fetch('http://localhost:3000/api/login',
+  {
+    method:'POST',
+    body: JSON.stringify({email:email,password:password})
+  })
+    const {token} = await response.json()
+    let resultado={'estado':'ok','token':token};
+    return resultado
+  } catch (err) {
+    let resultado={'estado':'error','token':token};
+    return resultado
+    console.error(`Error: ${err}`)
+  }
+}
+$('#formLogin').submit(async (event) => {
+    event.preventDefault()
+    const email = document.getElementById('correo').value
+    const password = document.getElementById('pass').value
+    const JWT = await postData(email,password)
+    if(JWT.estado=='ok'){
+      $('#sitChile').removeClass('visually-hidden');
+      $('#liLogout').removeClass('visually-hidden');
+      $('#liLogin').addClass('visually-hidden');
+    }
+    localStorage.setItem('jwt', JWT.token);
+    console.log(JWT)
+  })
+
