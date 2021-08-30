@@ -238,12 +238,36 @@ $('#formLogin').submit(async (event) => {
     const email = document.getElementById('correo').value
     const password = document.getElementById('pass').value
     const JWT = await postData(email,password)
-    if(JWT.estado=='ok'){
+
+    let container = document.querySelector("#containerAlertError");
+    if(JWT.token==undefined){
+      console.log("sin token");
+
+      container.innerHTML =`<div id="alertError" class="alert alert-warning alert-dismissible fade show" role="alert">
+      <strong>Error: </strong> Correo o contrasena invalido.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>`;
+    const alert = document.querySelector("#alertError");
+    
+
+    }else{
+      //modalLogin.close();
+      console.log("con token");
       $('#sitChile').removeClass('visually-hidden');
       $('#liLogout').removeClass('visually-hidden');
       $('#liLogin').addClass('visually-hidden');
+
     }
     localStorage.setItem('jwt', JWT.token);
     console.log(JWT)
   })
 
+// LOGOUT
+document.querySelector('#btnLogout').addEventListener('click', () => {
+ //borramos todo de el localstorage
+  localStorage.clear();
+  $('#liLogin').removeClass('visually-hidden');
+  $('#liLogout').addClass('visually-hidden');
+  $('#sitChile').addClass('visually-hidden');
+  window.location="index.html";
+});
